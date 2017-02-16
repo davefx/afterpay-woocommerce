@@ -1170,7 +1170,7 @@ function woocommerce_afterpay_init() {
 			$text = str_replace(array('[AMOUNT]'),$amount,$settings['product-pages-info-text']);
 
 			/**
-			 * woocommerce_afterpay_product_pages_info_text
+			 * afterpay_product_pages_info_text
 			 *
 			 * Filters the AfterPay message shown in product pages.
 			 *
@@ -1214,7 +1214,7 @@ function woocommerce_afterpay_init() {
 			$text = str_replace(array('[AMOUNT]'),$amount,$settings['category-pages-info-text']);
 			
 			/**
-			 * woocommerce_afterpay_category_pages_info_text
+			 * afterpay_category_pages_info_text
 			 *
 			 * Filters the AfterPay message shown in product pages.
 			 *
