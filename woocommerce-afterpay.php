@@ -1168,6 +1168,17 @@ function woocommerce_afterpay_init() {
 
 			$amount = wc_price($price/4);
 			$text = str_replace(array('[AMOUNT]'),$amount,$settings['product-pages-info-text']);
+
+			/**
+			 * woocommerce_afterpay_product_pages_info_text
+			 *
+			 * Filters the AfterPay message shown in product pages.
+			 *
+			 * @since 1.3.1
+			 *
+			 * @param string $text
+			 * @param int $product_id
+			 */
 			echo apply_filters( 'woocommerce_afterpay_product_pages_info_text', '<p class="afterpay-payment-info">'.$text.'</p>', $post->ID );
 		}
 	}
@@ -1201,6 +1212,17 @@ function woocommerce_afterpay_init() {
 
 			$amount = wc_price($price/4);
 			$text = str_replace(array('[AMOUNT]'),$amount,$settings['category-pages-info-text']);
+			
+			/**
+			 * woocommerce_afterpay_category_pages_info_text
+			 *
+			 * Filters the AfterPay message shown in product pages.
+			 *
+			 * @since 1.3.1
+			 *
+			 * @param string $text
+			 * @param int $product_id
+			 */
 			echo apply_filters( 'woocommerce_afterpay_category_pages_info_text', '<p class="afterpay-payment-info">'.$text.'</p>', $post->ID );
 		}
 
