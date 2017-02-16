@@ -1179,7 +1179,7 @@ function woocommerce_afterpay_init() {
 			 * @param string $text
 			 * @param int $product_id
 			 */
-			echo apply_filters( 'woocommerce_afterpay_product_pages_info_text', '<p class="afterpay-payment-info">'.$text.'</p>', $post->ID );
+			echo apply_filters( 'afterpay_product_pages_info_text', '<p class="afterpay-payment-info">'.$text.'</p>', $post->ID );
 		}
 	}
 
@@ -1223,7 +1223,7 @@ function woocommerce_afterpay_init() {
 			 * @param string $text
 			 * @param int $product_id
 			 */
-			echo apply_filters( 'woocommerce_afterpay_category_pages_info_text', '<p class="afterpay-payment-info">'.$text.'</p>', $post->ID );
+			echo apply_filters( 'afterpay_category_pages_info_text', '<p class="afterpay-payment-info">'.$text.'</p>', $post->ID );
 		}
 
 	}
