@@ -1168,7 +1168,7 @@ function woocommerce_afterpay_init() {
 
 			$amount = wc_price($price/4);
 			$text = str_replace(array('[AMOUNT]'),$amount,$settings['product-pages-info-text']);
-			echo '<p class="afterpay-payment-info">'.$text.'</p>';
+			echo apply_filters( 'woocommerce_afterpay_product_pages_info_text', '<p class="afterpay-payment-info">'.$text.'</p>', $post->ID );
 		}
 	}
 
@@ -1201,7 +1201,7 @@ function woocommerce_afterpay_init() {
 
 			$amount = wc_price($price/4);
 			$text = str_replace(array('[AMOUNT]'),$amount,$settings['category-pages-info-text']);
-			echo '<p class="afterpay-payment-info">'.$text.'</p>';
+			echo apply_filters( 'woocommerce_afterpay_category_pages_info_text', '<p class="afterpay-payment-info">'.$text.'</p>', $post->ID );
 		}
 
 	}
