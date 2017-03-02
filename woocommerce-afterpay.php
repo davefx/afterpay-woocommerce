@@ -973,7 +973,7 @@ function woocommerce_afterpay_init() {
 				// Check if the order is just created (prevent premature order note posting)
 				if ( strtotime('now') - strtotime($order->order_date) < 120 ) continue;
 
-				$this->log( 'Checking pending order for WC Order ID '.$order->ID.', Afterpay Order ID '.$afterpay_orderid);
+				$this->log( 'Checking pending order for WC Order ID '.$onhold_order->ID.', Afterpay Order ID '.$afterpay_orderid);
 				
 				$response = wp_remote_get(
 								$this->orderurl.'/'.$afterpay_orderid, 
@@ -1031,7 +1031,7 @@ function woocommerce_afterpay_init() {
 				// Check if there's a stored order token. If not, it's not an Afterpay order.
 				if (!$afterpay_token) continue;
 
-				$this->log( 'Checking abandoned order for WC Order ID '.$order->ID.', Afterpay Token '.$afterpay_token);
+				$this->log( 'Checking abandoned order for WC Order ID '.$pending_order->ID.', Afterpay Token '.$afterpay_token);
 
 				$response = wp_remote_get(
 								$this->orderurl.'?token='.$afterpay_token, 
