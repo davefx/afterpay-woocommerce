@@ -405,7 +405,7 @@ function woocommerce_afterpay_init() {
 		 *
 		 * @param  string $type, defaults to PBI
 		 * @param  WC_Order $order
-		 * @return  string or boolean false if no order token generated
+		 * @return  string or WP_Error if no order token generated
 		 * @since 1.0.0
 		 */
 		function get_order_token( $type = 'PBI', $order = false) {
@@ -518,12 +518,16 @@ function woocommerce_afterpay_init() {
 			$response = wp_remote_post($this->orderurl,$args);
 			$body = json_decode(wp_remote_retrieve_body($response));
 
-			$this->log( 'Order token result: '.print_r($body,true) );
-
+			if ( ! is_wp_error( $response ) ) {
+				$this->log( 'Order token result: ' . print_r( $body, true ) );
+			} else {
+				$this->log( 'Error retrieving Order token: ' . print_r( $response, true ) );
+            		}
+			
 			if (isset($body->orderToken)) {
 				return $body->orderToken;
 			} else {
-				return false;
+				return $response;
 			}
 		}
 
@@ -564,14 +568,14 @@ function woocommerce_afterpay_init() {
 			      	);
 				
 			}
-			else if ($token == false) {
+			else if ( is_wp_error( $token ) ) {
 				// Couldn't generate token
-            	$order->add_order_note(__('Unable to generate the order token. Payment couldn\'t proceed.', 'woo_afterpay'));
-                wc_add_notice(__('Sorry, there was a problem preparing your payment.', 'woo_afterpay'),'error');
-		        return array(
-		            'result' => 'failure',
-		            'redirect' => $order->get_checkout_payment_url(true)
-	      		);
+            	                $order->add_order_note(__('Unable to generate the order token. Payment couldn\'t proceed.', 'woo_afterpay'));
+                                wc_add_notice(__('Sorry, there was a problem preparing your payment with AfterPay. Please, try again.', 'woo_afterpay'), 'error');
+		        	return array(
+		            		'result' => 'failure',
+		            		'redirect' => $order->get_checkout_payment_url(true)
+	      			);
 
 		    } else {
 		    		// Order token successful, save it so we can confirm it later
