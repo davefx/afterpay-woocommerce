@@ -527,7 +527,7 @@ function woocommerce_afterpay_init() {
 			if (isset($body->orderToken)) {
 				return $body->orderToken;
 			} else {
-				return $response;
+				return false;
 			}
 		}
 
@@ -568,7 +568,7 @@ function woocommerce_afterpay_init() {
 			      	);
 				
 			}
-			else if ( is_wp_error( $token ) ) {
+			else if ( $token == false ) {
 				// Couldn't generate token
             	                $order->add_order_note(__('Unable to generate the order token. Payment couldn\'t proceed.', 'woo_afterpay'));
                                 wc_add_notice(__('Sorry, there was a problem preparing your payment with AfterPay. Please, try again.', 'woo_afterpay'), 'error');
