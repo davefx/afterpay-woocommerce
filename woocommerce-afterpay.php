@@ -405,7 +405,7 @@ function woocommerce_afterpay_init() {
 		 *
 		 * @param  string $type, defaults to PBI
 		 * @param  WC_Order $order
-		 * @return  string or WP_Error if no order token generated
+		 * @return  string or boolean false if no order token generated
 		 * @since 1.0.0
 		 */
 		function get_order_token( $type = 'PBI', $order = false) {
