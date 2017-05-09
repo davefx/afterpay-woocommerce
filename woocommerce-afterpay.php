@@ -569,9 +569,9 @@ function woocommerce_afterpay_init() {
 				
 			}
 			else if ( $token == false ) {
-				// Couldn't generate token
-            	                $order->add_order_note(__('Unable to generate the order token. Payment couldn\'t proceed.', 'woo_afterpay'));
-                                wc_add_notice( apply_filters('afterpay_preparing_payment_problem_message', __('Sorry, there was a problem preparing your payment.', 'woo_afterpay') ), 'error');
+				// Couldn't generate token				
+				$order->add_order_note(__('Unable to generate the order token. Payment couldn\'t proceed.', 'woo_afterpay'));
+				wc_add_notice( apply_filters('afterpay_preparing_payment_problem_message', __('Sorry, there was a problem preparing your payment.', 'woo_afterpay') ), 'error');
 		        	return array(
 		            		'result' => 'failure',
 		            		'redirect' => $order->get_checkout_payment_url(true)
