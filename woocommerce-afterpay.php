@@ -856,7 +856,7 @@ function woocommerce_afterpay_init() {
 		 * @since 1.0.0
 		 */
 		public function notify_order_shipped($order_id) {
-			$payment_method = get_post_meta( $order->id, '_payment_method', true );
+			$payment_method = get_post_meta( $order_id, '_payment_method', true );
 			if ($payment_method != "afterpay") return;
 			
 			if( function_exists("wc_get_order") ) {
