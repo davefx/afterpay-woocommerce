@@ -1211,9 +1211,11 @@ function woocommerce_afterpay_init() {
 			}
 			$price = $product->get_price();
 
-			// Don't display if the product is a subscription product
-			if ($product->is_type('subscription')) return;
-		
+			// Don't display if the product is a subscription product or any other user-defined condition
+			if ( apply_filters( 'afterpay_hide_info_on_product_page', $product->is_type('subscription'), $product ) ) {
+			    return;
+			}
+			
 			// Don't show if the string has [AMOUNT] and price is variable, if the amount is zero, or if the amount doesn't fit within the limits
 			if ((strpos($settings['product-pages-info-text'],'[AMOUNT]') !== false && strpos($product->get_price_html(),'&ndash;') !== false) || $price == 0 || $settings['pay-over-time-limit-max'] < $price || $settings['pay-over-time-limit-min'] > $price) return;
 
@@ -1243,8 +1245,10 @@ function woocommerce_afterpay_init() {
  		if (isset($settings['show-info-on-product-pages']) && $settings['show-info-on-product-pages'] == 'yes' && isset($settings['product-pages-info-text'])) {
  			$price = $variation->get_price();
 	
-			// Don't display if the parent product is a subscription product
-		 	if ($variation->parent->is_type('subscription')) return;
+			// Don't display if the parent product is a subscription product or any other user-defined condition
+			if ( apply_filters( 'afterpay_hide_info_on_variation_page', $variation->parent->is_type('subscription'), $variation ) ) {
+				return;
+			}
 	 
 			// Don't show if the amount is zero, or if the amount doesn't fit within the limits
 			if ($price == 0 || $settings['pay-over-time-limit-max'] < $price || $settings['pay-over-time-limit-min'] > $price) return;
@@ -1280,8 +1284,10 @@ function woocommerce_afterpay_init() {
 			}
 			$price = $product->get_price();
 
-			// Don't display if the product is a subscription product
-			if ($product->is_type('subscription')) return;
+			// Don't display if the product is a subscription product or any other user-defined condition
+			if ( apply_filters( 'afterpay_hide_over_time_info_on_product', $product->is_type('subscription'), $product ) ) {
+				return;
+			}
 		
 			// Don't show if the string has [AMOUNT] and price is variable, if the amount is zero, or if the amount doesn't fit within the limits
 			if ((strpos($settings['category-pages-info-text'],'[AMOUNT]') !== false && strpos($product->get_price_html(),'&ndash;') !== false) || $price == 0 || $settings['pay-over-time-limit-max'] < $price || $settings['pay-over-time-limit-min'] > $price) return;
