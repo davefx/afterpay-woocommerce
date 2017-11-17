@@ -3,7 +3,7 @@
 Plugin Name: WooCommerce Afterpay Gateway
 Plugin URI: http://woothemes.com/woocommerce
 Description: Use Afterpay as a credit card processor for WooCommerce.
-Version: 1.3.0
+Version: 1.3.1
 Author: AfterPay
 Author URI: http://www.afterpay.com.au/
 
@@ -98,8 +98,13 @@ function woocommerce_afterpay_init() {
 		    $this->init_scripts_js();
 		    $this->init_scripts_css();
 
-		    $api_url = $this->environments[ $this->settings['testmode'] ]['api_url'];
-		    $web_url = $this->environments[ $this->settings['testmode'] ]['web_url'];
+		    if( !empty($this->environments[ $this->settings['testmode'] ]['api_url']) ) {
+		    	$api_url = $this->environments[ $this->settings['testmode'] ]['api_url'];
+		    }
+		    if( !empty($this->environments[ $this->settings['testmode'] ]['web_url']) ) {
+		    	$web_url = $this->environments[ $this->settings['testmode'] ]['web_url'];
+		    }
+		    
 
 		    if( empty($api_url) ) {
 		    	$api_url = $this->environments[ 'sandbox' ]['api_url'];
@@ -340,6 +345,7 @@ function woocommerce_afterpay_init() {
 	    	//if ( isset( $data['title'] ) && $data['title'] != '' ) $title = $data['title']; else $title = '';
 	    	$data['class'] = (isset( $data['class'] )) ? $data['class'] : '';
 	    	$data['css'] = (isset( $data['css'] )) ? '<style>'.$data['css'].'</style>' : '';
+	    	$data['label'] = (isset( $data['label'] )) ? $data['label'] : '';
 
 	    	$value = ( isset( $this->settings[ $key ] ) ) ? esc_attr( $this->settings[ $key ] ) : '';
 
@@ -411,18 +417,32 @@ function woocommerce_afterpay_init() {
 				foreach ($orderitems as $item) {
 					// get SKU
 					if ($item['variation_id']) { 
-				    	$product = new WC_Product($item['variation_id']);
-				  	} else {
-				    	$product = new WC_Product($item['product_id']);
+
+						if(function_exists("wc_get_product")) {
+					    	$product = wc_get_product($item['variation_id']);
+					    }
+					    else {
+					    	$product = new WC_Product($item['variation_id']);
+					    }
+				  	} 
+				  	else {
+
+				  		if(function_exists("wc_get_product")) {
+				    		$product = wc_get_product($item['product_id']);
+					    }
+					    else {
+					    	$product = new WC_Product($item['product_id']);
+					    }
 				  	}
+
 					$product = 
-					$items[] = array(
-						'name' => $item['name'],
-						'sku' => $product->get_sku(),
-						'quantity' => $item['qty'],
-						'price' => array(
-							'amount' => number_format(($item['line_subtotal'] / $item['qty']),2,'.',''),
-							'currency' => get_woocommerce_currency()
+						$items[] = array(
+							'name' 		=> $item['name'],
+							'sku' 		=> $product->get_sku(),
+							'quantity' 	=> $item['qty'],
+							'price' 	=> array(
+								'amount' => number_format(($item['line_subtotal'] / $item['qty']),2,'.',''),
+								'currency' => get_woocommerce_currency()
 							)
 						);
 				}
@@ -498,8 +518,12 @@ function woocommerce_afterpay_init() {
 			$response = wp_remote_post($this->orderurl,$args);
 			$body = json_decode(wp_remote_retrieve_body($response));
 
-			$this->log( 'Order token result: '.print_r($body,true) );
-
+			if ( ! is_wp_error( $response ) ) {
+				$this->log( 'Order token result: ' . print_r( $body, true ) );
+			} else {
+				$this->log( 'Error retrieving Order token: ' . print_r( $response, true ) );
+            		}
+			
 			if (isset($body->orderToken)) {
 				return $body->orderToken;
 			} else {
@@ -526,7 +550,7 @@ function woocommerce_afterpay_init() {
 			}
 			
 			// Get the order token
-			$token = $this->get_order_token($_POST['afterpay_payment_type'], $order);
+			$token = $this->get_order_token('PBI', $order);
 			$validoptions = $this->check_payment_options_for_amount($ordertotal);
 			
 			if( count($validoptions) == 0 ) {
@@ -544,14 +568,14 @@ function woocommerce_afterpay_init() {
 			      	);
 				
 			}
-			else if ($token == false) {
-				// Couldn't generate token
-            	$order->add_order_note(__('Unable to generate the order token. Payment couldn\'t proceed.', 'woo_afterpay'));
-                wc_add_notice(__('Sorry, there was a problem preparing your payment.', 'woo_afterpay'),'error');
-		        return array(
-		            'result' => 'failure',
-		            'redirect' => $order->get_checkout_payment_url(true)
-	      		);
+			else if ( $token == false ) {
+				// Couldn't generate token				
+				$order->add_order_note(__('Unable to generate the order token. Payment couldn\'t proceed.', 'woo_afterpay'));
+				wc_add_notice( apply_filters('afterpay_preparing_payment_problem_message', __('Sorry, there was a problem preparing your payment.', 'woo_afterpay') ), 'error');
+		        	return array(
+		            		'result' => 'failure',
+		            		'redirect' => $order->get_checkout_payment_url(true)
+	      			);
 
 		    } else {
 		    		// Order token successful, save it so we can confirm it later
@@ -645,6 +669,15 @@ function woocommerce_afterpay_init() {
 													)
 								)
 							);
+				
+				if ( is_wp_error( $response ) ) {
+				    	/** @var WP_Error $response */
+					$this->log( 'Error while checking order status result: ' . $response->get_error_message() );
+					$order->add_order_note(sprintf(__('Error when obtaining payment confirmation from AfterPay. Afterpay Token: %s','woo_afterpay'),
+						get_post_meta($order_id,'_afterpay_token',true)));
+					return $order_id;
+                		}
+				
 				$body = json_decode(wp_remote_retrieve_body($response));
 
 				$this->log( 'Checking order status result: '.print_r($body,true) );
@@ -983,6 +1016,15 @@ function woocommerce_afterpay_init() {
 									)
 								)
 							);
+				
+				if ( is_wp_error( $response ) ) {
+					/** @var WP_Error $response */
+					self::log( 'Error while checking order status result: ' . $response->get_error_message() );
+					$order->add_order_note(sprintf(__('Error when obtaining payment confirmation from AfterPay for order with transaction: %s','woo_afterpay'),
+						$afterpay_orderid));
+					continue;
+				}
+				
 				$body = json_decode(wp_remote_retrieve_body($response));
 
 				$this->log( 'Checking pending order result: '.print_r($body,true) );
@@ -1041,6 +1083,15 @@ function woocommerce_afterpay_init() {
 									)
 								)
 							);
+				
+				if ( is_wp_error( $response ) ) {
+					/** @var WP_Error $response */
+					self::log( 'Error while checking order status result: ' . $response->get_error_message() );
+					$order->add_order_note(sprintf(__('Error when obtaining payment confirmation from AfterPay for order with transaction: %s','woo_afterpay'),
+						$afterpay_orderid));
+					continue;
+				}
+				
 				$body = json_decode(wp_remote_retrieve_body($response));
 
 				$this->log( 'Checking abandoned order result: '.print_r($body,true) );
@@ -1182,6 +1233,31 @@ function woocommerce_afterpay_init() {
 			echo apply_filters( 'afterpay_product_pages_info_text', '<p class="afterpay-payment-info">'.$text.'</p>', $post->ID );
 		}
 	}
+
+	function afterpay_edit_variation_price_html( $price, $variation ) {
+ 		$return_html = $price;
+		$settings = get_option('woocommerce_afterpay_settings');
+		
+		if (!isset($settings['enabled']) || $settings['enabled'] !== 'yes') return;
+ 
+ 		if (isset($settings['show-info-on-product-pages']) && $settings['show-info-on-product-pages'] == 'yes' && isset($settings['product-pages-info-text'])) {
+ 			$price = $variation->get_price();
+	
+			// Don't display if the parent product is a subscription product
+		 	if ($variation->parent->is_type('subscription')) return;
+	 
+			// Don't show if the amount is zero, or if the amount doesn't fit within the limits
+			if ($price == 0 || $settings['pay-over-time-limit-max'] < $price || $settings['pay-over-time-limit-min'] > $price) return;
+			
+			$instalment_price_html = wc_price($price / 4);
+		 	$afterpay_paragraph_html = str_replace('[AMOUNT]', $instalment_price_html, $settings['product-pages-info-text']);
+		 	$return_html .= '<p class="afterpay-payment-info">' . $afterpay_paragraph_html . '</p>';
+		}
+		return $return_html;
+ 	}
+
+	add_filter( 'woocommerce_variation_price_html', 'afterpay_edit_variation_price_html', 10, 2);
+	add_filter( 'woocommerce_variation_sale_price_html', 'afterpay_edit_variation_price_html', 10, 2);
 
 	/**
 	 * Showing the Pay Over Time information on the product index pages 
