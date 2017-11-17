@@ -1372,6 +1372,10 @@ function woocommerce_afterpay_init() {
 	}
 	add_action('template_redirect','afterpay_check_for_cancelled_payment');
 
+	if ( ! wp_next_scheduled( 'afterpay_do_cron_jobs' ) ) {
+		afterpay_create_wpcronjob();
+	}
+
 }
 
 /* WP-Cron activation and schedule setup */
