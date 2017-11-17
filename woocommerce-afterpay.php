@@ -155,7 +155,7 @@ function woocommerce_afterpay_init() {
 				$env_values[$key] = $item["name"];
 			}
 
-			$this->form_fields = array(
+			$this->form_fields = apply_filters( 'afterpay_options_form_fields', array(
 			    'enabled' => array(
 			        'title' => __( 'Enable/Disable', 'woo_afterpay' ),
 			        'type' => 'checkbox',
@@ -269,7 +269,7 @@ function woocommerce_afterpay_init() {
 					'default' => 'or 4 payments of [AMOUNT] with Afterpay',
 					'description' => 'Use [AMOUNT] to insert the repayment amount. If you use [AMOUNT], this message won\'t be displayed for products with variable pricing.'
 				)
-			);
+			) );
 		} // End init_form_fields()
 
 		/**
