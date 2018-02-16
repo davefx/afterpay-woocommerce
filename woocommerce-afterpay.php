@@ -269,7 +269,7 @@ function woocommerce_afterpay_init() {
 					'default' => 'or 4 payments of [AMOUNT] with Afterpay',
 					'description' => 'Use [AMOUNT] to insert the repayment amount. If you use [AMOUNT], this message won\'t be displayed for products with variable pricing.'
 				)
-			) );
+			), $this );
 		} // End init_form_fields()
 
 		/**
