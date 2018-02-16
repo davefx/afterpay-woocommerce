@@ -648,6 +648,11 @@ function woocommerce_afterpay_init() {
 				$order = new WC_Order( $order_id );
 			}
 
+			// Only do things if the order exists and has been paid through AfterPay
+			if ( ! $order || $order->get_payment_method() !== 'afterpay' ) {
+				return $order_id;
+			}
+			
 			// Avoid emptying the cart if it's cancelled
 			if (isset($body->status) && $body->status == "CANCELLED") {
 				return $order_id;
